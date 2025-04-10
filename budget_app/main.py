@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 from tkinter import messagebox
 from tkinter import ttk
+from tkcalendar import DateEntry
 from ui.dashboard import Dashboard
 
 def main():
