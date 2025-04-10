@@ -1,43 +1,61 @@
 import sqlite3
+from datetime import datetime
 
-class DBHandler:
-    def __init__(self, db_name="budget.db"):
-        self.connection = sqlite3.connect(db_name)
+class Database:
+    def __init__(self, db_name='budget.db'):
+        self.conn = sqlite3.connect(db_name)
         self.create_tables()
-
+        
     def create_tables(self):
-        with self.connection:
-            self.connection.execute("""
-                CREATE TABLE IF NOT EXISTS entries (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    type TEXT,
-                    category TEXT,
-                    amount REAL,
-                    description TEXT,
-                    date TEXT
-                )
-            """)
+        cursor = self.conn.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS entries (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                type TEXT CHECK(type IN ('income', 'expense')),
+                amount REAL NOT NULL,
+                category TEXT NOT NULL,
+                date TEXT NOT NULL,
+                description TEXT
+            )
+        ''')
+        self.conn.commit()
 
-    def add_entry(self, entry_data):
-        query = "INSERT INTO entries (type, category, amount, description, date) VALUES (?, ?, ?, ?, ?)"
-        with self.connection:
-            self.connection.execute(query, entry_data)
+    def add_entry(self, entry_type, amount, category, date, description):
+        cursor = self.conn.cursor()
+        cursor.execute('''
+            INSERT INTO entries (type, amount, category, date, description)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (entry_type, amount, category, date, description))
+        self.conn.commit()
 
-    def get_entries(self):
-        query = "SELECT * FROM entries"
-        cursor = self.connection.cursor()
-        cursor.execute(query)
+    def get_entries(self, start_date=None, end_date=None):
+        cursor = self.conn.cursor()
+        query = 'SELECT * FROM entries'
+        if start_date or end_date:
+            query += ' WHERE date BETWEEN ? AND ?'
+            cursor.execute(query, (start_date, end_date))
+        else:
+            cursor.execute(query)
         return cursor.fetchall()
 
     def delete_entry(self, entry_id):
-        query = "DELETE FROM entries WHERE id = ?"
-        with self.connection:
-            self.connection.execute(query, (entry_id,))
+        cursor = self.conn.cursor()
+        cursor.execute('DELETE FROM entries WHERE id = ?', (entry_id,))
+        self.conn.commit()
 
-    def update_entry(self, entry_id, entry_data):
-        query = """
-        UPDATE entries SET type = ?, category = ?, amount = ?, description = ?, date = ?
-        WHERE id = ?
-        """
-        with self.connection:
-            self.connection.execute(query, entry_data + (entry_id,))
+    def update_entry(self, entry_id, **kwargs):
+        set_clause = ', '.join([f"{k} = ?" for k in kwargs])
+        values = list(kwargs.values()) + [entry_id]
+        cursor = self.conn.cursor()
+        cursor.execute(f'UPDATE entries SET {set_clause} WHERE id = ?', values)
+        self.conn.commit()
+
+    def get_balance(self):
+        cursor = self.conn.cursor()
+        cursor.execute('''
+            SELECT 
+                SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END) -
+                SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END)
+            FROM entries
+        ''')
+        return cursor.fetchone()[0] or 0

@@ -1,35 +1,27 @@
 import tkinter as tk
-from tkinter import ttk
 from ui.dashboard import Dashboard
-from database.db_handler import DBHandler
 
-class BudgetApp(tk.Tk):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.title("Budget Manager")
-        self.geometry("800x600")
-        
-        # Create the shared database handler
-        self.db_handler = DBHandler()
-
-        # Setup container for different frames (dashboard, forms, etc.)
-        container = ttk.Frame(self)
-        container.pack(side="top", fill="both", expand=True)
-
-        # Dictionary for frames
-        self.frames = {}
-        for F in (Dashboard,):
-            frame = F(parent=container, controller=self)
-            self.frames[F] = frame
-            frame.grid(row=0, column=0, sticky="nsew")
-        
-        self.show_frame(Dashboard)
-
-    def show_frame(self, frame_class):
-        '''Raise the frame to the top.'''
-        frame = self.frames[frame_class]
-        frame.tkraise()
+def main():
+    root = tk.Tk()
+    root.title("Budget Manager")
+    root.geometry("800x600")
+    root.resizable(True, True)
+    
+    dashboard = Dashboard(root)
+    
+    # Add menu bar
+    menubar = tk.Menu(root)
+    root.config(menu=menubar)
+    
+    file_menu = tk.Menu(menubar, tearoff=0)
+    file_menu.add_command(label="Exit", command=root.quit)
+    menubar.add_cascade(label="File", menu=file_menu)
+    
+    help_menu = tk.Menu(menubar, tearoff=0)
+    help_menu.add_command(label="About")
+    menubar.add_cascade(label="Help", menu=help_menu)
+    
+    root.mainloop()
 
 if __name__ == "__main__":
-    app = BudgetApp()
-    app.mainloop()
+    main()
