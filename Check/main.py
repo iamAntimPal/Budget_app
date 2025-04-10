@@ -1,47 +1,4 @@
 import sqlite3
-
-class DBHandler:
-    def __init__(self, db_name="budget.db"):
-        self.connection = sqlite3.connect(db_name)
-        self.create_tables()
-
-    def create_tables(self):
-        with self.connection:
-            self.connection.execute("""
-                CREATE TABLE IF NOT EXISTS entries (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    type TEXT,
-                    category TEXT,
-                    amount REAL,
-                    description TEXT,
-                    date TEXT
-                )
-            """)
-
-    def add_entry(self, entry_data):
-        query = "INSERT INTO entries (type, category, amount, description, date) VALUES (?, ?, ?, ?, ?)"
-        with self.connection:
-            self.connection.execute(query, entry_data)
-
-    def get_entries(self):
-        query = "SELECT * FROM entries"
-        cursor = self.connection.cursor()
-        cursor.execute(query)
-        return cursor.fetchall()
-
-    def delete_entry(self, entry_id):
-        query = "DELETE FROM entries WHERE id = ?"
-        with self.connection:
-            self.connection.execute(query, (entry_id,))
-
-    def update_entry(self, entry_id, entry_data):
-        query = """
-        UPDATE entries SET type = ?, category = ?, amount = ?, description = ?, date = ?
-        WHERE id = ?
-        """
-        with self.connection:
-            self.connection.execute(query, entry_data + (entry_id,))
-import sqlite3
 from datetime import datetime
 
 class Database:
@@ -102,3 +59,27 @@ class Database:
             FROM entries
         ''')
         return cursor.fetchone()[0] or 0
+
+    def get_monthly_summary(self):
+        cursor = self.conn.cursor()
+        cursor.execute('''
+            SELECT 
+                strftime('%Y', date) as year,
+                strftime('%m', date) as month,
+                SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END) as total_income,
+                SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END) as total_expense
+            FROM entries
+            GROUP BY year, month
+            ORDER BY year DESC, month DESC
+            LIMIT 12
+        ''')
+        return cursor.fetchall()
+
+    def get_category_breakdown(self):
+        cursor = self.conn.cursor()
+        cursor.execute('''
+            SELECT category, SUM(amount) 
+            FROM entries 
+            GROUP BY category
+        ''')
+        return dict(cursor.fetchall())
