@@ -1,0 +1,27 @@
+/* light.css */
+body {
+     background: #f0f0f0;
+     foreground: #2c2c2c;
+     font-family: Arial, sans-serif;
+}
+
+.TFrame {
+     background: #ffffff;
+}
+
+.TLabel {
+     background: #f8f8f8;
+     foreground: #333333;
+}
+
+.TButton {
+     background: #4CAF50;
+     foreground: white;
+     relief: flat;
+     padding: 8px 16px;
+     border-radius: 4px;
+}
+
+.TButton:hover {
+     background: #45a049;
+}
