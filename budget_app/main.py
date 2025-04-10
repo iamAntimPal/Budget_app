@@ -1,33 +1,28 @@
 import tkinter as tk
-import os
-import sys
-from pathlib import Path
-from tkinter import messagebox
-from tkinter import ttk
-from tkcalendar import DateEntry
-from ui.dashboard import Dashboard
+from ui.navigation import Navigation
+from django.conf import settings
+import ttk.style as ttk
+from controllers.manager import BudgetManager
+class BudgetApp:
+    def __init__(self):
+        self.root = tk.Tk()
+        self.root.title("Budget Manager Pro")
+        self.root.geometry("1200x800")
+        self.root.minsize(800, 600)
+        
+        # Apply custom styles
+        style = ttk.Style()
+        style.theme_use('clam')
+        style.configure('Treeview', rowheight=25)
+        style.configure('TLabel', font=('Arial', 12))
+        style.configure('TButton', font=('Arial', 12), padding=5)
+        
+        self.navigation = Navigation(self.root)
+        self.navigation.pack(fill=tk.BOTH, expand=True)
 
-def main():
-    root = tk.Tk()
-    root.title("Budget Manager")
-    root.geometry("800x600")
-    root.resizable(True, True)
-    
-    dashboard = Dashboard(root)
-    
-    # Add menu bar
-    menubar = tk.Menu(root)
-    root.config(menu=menubar)
-    
-    file_menu = tk.Menu(menubar, tearoff=0)
-    file_menu.add_command(label="Exit", command=root.quit)
-    menubar.add_cascade(label="File", menu=file_menu)
-    
-    help_menu = tk.Menu(menubar, tearoff=0)
-    help_menu.add_command(label="About")
-    menubar.add_cascade(label="Help", menu=help_menu)
-    
-    root.mainloop()
+    def run(self):
+        self.root.mainloop()
 
 if __name__ == "__main__":
-    main()
+    app = BudgetApp()
+    app.run()

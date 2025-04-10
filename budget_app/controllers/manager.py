@@ -27,3 +27,27 @@ class BudgetManager:
         if invalid := set(kwargs.keys()) - valid_fields:
             raise ValueError(f"Invalid fields: {invalid}")
         self.db.update_entry(entry_id, **kwargs)
+        
+    def get_monthly_summary(self):
+        cursor = self.db.conn.cursor()
+        cursor.execute('''
+            SELECT 
+                strftime('%Y', date) as year,
+                strftime('%m', date) as month,
+                SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END) as total_income,
+                SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END) as total_expense
+            FROM entries
+            GROUP BY year, month
+            ORDER BY year DESC, month DESC
+            LIMIT 12
+        ''')
+        return cursor.fetchall()
+
+    def get_category_breakdown(self):
+        cursor = self.db.conn.cursor()
+        cursor.execute('''
+            SELECT category, SUM(amount) 
+            FROM entries 
+            GROUP BY category
+        ''')
+        return dict(cursor.fetchall())

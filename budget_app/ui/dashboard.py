@@ -1,75 +1,64 @@
 import tkinter as tk
 from tkinter import ttk
-from tkcalendar import DateEntry
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from controllers.manager import BudgetManager
 
-class Dashboard:
-    def __init__(self, root):
-        self.root = root
+class Dashboard(ttk.Frame):
+    def __init__(self, parent):
+        super().__init__(parent)
         self.manager = BudgetManager()
         self.create_widgets()
 
     def create_widgets(self):
-        # Balance Frame
-        balance_frame = ttk.LabelFrame(self.root, text="Current Balance")
+        # Balance Section
+        balance_frame = ttk.LabelFrame(self, text="Current Balance")
         balance_frame.pack(padx=10, pady=10, fill='x')
         
         self.balance_label = ttk.Label(balance_frame, text="₹0.00", font=('Arial', 24))
         self.balance_label.pack(padx=20, pady=20)
         
-        # Input Frame
-        input_frame = ttk.LabelFrame(self.root, text="Add Entry")
-        input_frame.pack(padx=10, pady=10, fill='x')
+        # Monthly Summary Chart
+        chart_frame = ttk.LabelFrame(self, text="Monthly Summary")
+        chart_frame.pack(padx=10, pady=10, fill='both', expand=True)
         
-        ttk.Label(input_frame, text="Type:").grid(row=0, column=0)
-        self.type_var = tk.StringVar(value='income')
-        ttk.Radiobutton(input_frame, text="Income", variable=self.type_var, value='income').grid(row=0, column=1)
-        ttk.Radiobutton(input_frame, text="Expense", variable=self.type_var, value='expense').grid(row=0, column=2)
+        self.figure = Figure(figsize=(6, 4), dpi=100)
+        self.ax = self.figure.add_subplot(111)
+        self.canvas = FigureCanvasTkAgg(self.figure, master=chart_frame)
+        self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         
-        ttk.Label(input_frame, text="Amount:").grid(row=1, column=0)
-        self.amount_entry = ttk.Entry(input_frame)
-        self.amount_entry.grid(row=1, column=1, columnspan=2)
+        # Category Breakdown
+        category_frame = ttk.LabelFrame(self, text="Category Breakdown")
+        category_frame.pack(padx=10, pady=10, fill='x')
         
-        ttk.Label(input_frame, text="Category:").grid(row=2, column=0)
-        self.category_entry = ttk.Combobox(input_frame, values=["Food", "Rent", "Salary", "Entertainment"])
-        self.category_entry.grid(row=2, column=1, columnspan=2)
+        self.category_tree = ttk.Treeview(category_frame, columns=('category', 'total'), show='headings')
+        self.category_tree.heading('category', text='Category')
+        self.category_tree.heading('total', text='Total')
+        self.category_tree.pack(fill='both', expand=True)
         
-        ttk.Label(input_frame, text="Date:").grid(row=3, column=0)
-        self.date_entry = DateEntry(input_frame, date_pattern='yyyy-mm-dd')
-        self.date_entry.grid(row=3, column=1, columnspan=2)
-        
-        ttk.Label(input_frame, text="Description:").grid(row=4, column=0)
-        self.desc_entry = ttk.Entry(input_frame)
-        self.desc_entry.grid(row=4, column=1, columnspan=2)
-        
-        ttk.Button(input_frame, text="Submit", command=self.submit_entry).grid(row=5, column=0, columnspan=3, pady=5)
-        
-        # Status Bar
-        self.status_var = tk.StringVar()
-        ttk.Label(self.root, textvariable=self.status_var).pack(padx=10, pady=5, anchor='w')
-        
-        self.update_balance()
+        self.update_content()
 
-    def submit_entry(self):
-        try:
-            self.manager.add_entry(
-                self.type_var.get(),
-                float(self.amount_entry.get()),
-                self.category_entry.get(),
-                self.date_entry.get(),
-                self.desc_entry.get()
-            )
-            self.clear_form()
-            self.update_balance()
-            self.status_var.set("Entry added successfully!")
-        except Exception as e:
-            self.status_var.set(f"Error: {str(e)}")
-
-    def clear_form(self):
-        self.amount_entry.delete(0, 'end')
-        self.category_entry.set('')
-        self.desc_entry.delete(0, 'end')
-
-    def update_balance(self):
+    def update_content(self):
+        # Update balance
         balance = self.manager.calculate_balance()
         self.balance_label.config(text=f"₹{balance:,.2f}")
+        
+        # Update monthly chart
+        monthly_data = self.manager.get_monthly_summary()
+        self.ax.clear()
+        if monthly_data:
+            months = [f"{m[0]:02d}/{y}" for y, m in monthly_data]
+            income = [i for i, e, y, m in monthly_data]
+            expense = [e for i, e, y, m in monthly_data]
+            
+            self.ax.bar(months, income, label='Income')
+            self.ax.bar(months, [-e for e in expense], label='Expense')
+            self.ax.legend()
+        self.canvas.draw()
+        
+        # Update category breakdown
+        categories = self.manager.get_category_breakdown()
+        for row in self.category_tree.get_children():
+            self.category_tree.delete(row)
+        for category, total in categories.items():
+            self.category_tree.insert('', 'end', values=(category, f"₹{total:,.2f}"))
