@@ -3,8 +3,8 @@
 A lightweight, CSV‑backed budget management application built with Python’s Tkinter library. This application features a secure login and registration system, a menu‐driven interface to navigate through Dashboard, Add Entry, and Reports screens, and a dark/light theme toggle. All data is persisted using CSV files stored in the `data/` folder.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![GitHub](https://img.shields.io/github/license/antim-1000/ThinkTrack)](https://github.com/antim-1000/ThinkTrack/blob/main/LICENSE)
-[![GitHub](https://img.shields.io/github/last-commit/antim-1000/ThinkTrack)](https://github.com/antim-1000/ThinkTrack/commits/main)
+[![GitHub](https://img.shields.io/github/license/antim-1000/ThinkTrack)](https://github.com/iamAntimPal/ThinkTrack/blob/main/LICENSE)
+[![GitHub](https://img.shields.io/github/last-commit/antim-1000/ThinkTrack)](https://github.com/iamAntimPal/ThinkTrack/commits/main)
 
 ## Features
 
