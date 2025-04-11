@@ -304,29 +304,82 @@ class BudgetProApp:
     def show_income(self):
         self.clear_content()
         frame = ttk.Frame(self.content_frame)
-        frame.pack(pady=20)
-        
-        ttk.Label(frame, text="Add Income", font=("Helvetica", 16, "bold")).grid(row=0, column=0, columnspan=2, pady=10)
-        
+        frame.pack(side=LEFT, fill=BOTH, expand=True, padx=10, pady=10)
+
         # Input fields for income entry
-        ttk.Label(frame, text="Date (YYYY-MM-DD):").grid(row=1, column=0, padx=5, pady=5, sticky=tk.E)
+        ttk.Label(frame, text="Date (YYYY-MM-DD):").grid(row=0, column=0, padx=5, pady=5, sticky=tk.E)
         self.income_date_entry = ttk.Entry(frame)
-        self.income_date_entry.grid(row=1, column=1, padx=5, pady=5)
-        
-        ttk.Label(frame, text="Category:").grid(row=2, column=0, padx=5, pady=5, sticky=tk.E)
+        self.income_date_entry.grid(row=0, column=1, padx=5, pady=5)
+
+        ttk.Label(frame, text="Category:").grid(row=1, column=0, padx=5, pady=5, sticky=tk.E)
         self.income_category_entry = ttk.Entry(frame)
-        self.income_category_entry.grid(row=2, column=1, padx=5, pady=5)
-        
-        ttk.Label(frame, text="Amount:").grid(row=3, column=0, padx=5, pady=5, sticky=tk.E)
+        self.income_category_entry.grid(row=1, column=1, padx=5, pady=5)
+
+        ttk.Label(frame, text="Amount:").grid(row=2, column=0, padx=5, pady=5, sticky=tk.E)
         self.income_amount_entry = ttk.Entry(frame)
-        self.income_amount_entry.grid(row=3, column=1, padx=5, pady=5)
-        
-        ttk.Label(frame, text="Description:").grid(row=4, column=0, padx=5, pady=5, sticky=tk.E)
+        self.income_amount_entry.grid(row=2, column=1, padx=5, pady=5)
+
+        ttk.Label(frame, text="Description:").grid(row=3, column=0, padx=5, pady=5, sticky=tk.E)
         self.income_desc_entry = ttk.Entry(frame)
-        self.income_desc_entry.grid(row=4, column=1, padx=5, pady=5)
-        
+        self.income_desc_entry.grid(row=3, column=1, padx=5, pady=5)
+
+        # Buttons for income actions
         add_btn = ttk.Button(frame, text="Add Income", command=self.add_income)
-        add_btn.grid(row=5, column=0, columnspan=2, pady=10)
+        add_btn.grid(row=4, column=0, pady=10)
+
+        update_btn = ttk.Button(frame, text="Update Income", command=self.update_income)
+        update_btn.grid(row=4, column=1, pady=10)
+
+        reset_btn = ttk.Button(frame, text="Reset", command=self.reset_income_fields)
+        reset_btn.grid(row=5, column=0, pady=10)
+
+        delete_btn = ttk.Button(frame, text="Delete Income", command=self.delete_income)
+        delete_btn.grid(row=5, column=1, pady=10)
+
+        # Right-side frame to display income data
+        self.income_data_frame = ttk.Frame(self.content_frame)
+        self.income_data_frame.pack(side=RIGHT, fill=BOTH, expand=True, padx=10, pady=10)
+        self.display_income_data()
+
+    def show_expense(self):
+        self.clear_content()
+        frame = ttk.Frame(self.content_frame)
+        frame.pack(side=LEFT, fill=BOTH, expand=True, padx=10, pady=10)
+
+        # Input fields for expense entry
+        ttk.Label(frame, text="Date (YYYY-MM-DD):").grid(row=0, column=0, padx=5, pady=5, sticky=tk.E)
+        self.expense_date_entry = ttk.Entry(frame)
+        self.expense_date_entry.grid(row=0, column=1, padx=5, pady=5)
+
+        ttk.Label(frame, text="Category:").grid(row=1, column=0, padx=5, pady=5, sticky=tk.E)
+        self.expense_category_entry = ttk.Entry(frame)
+        self.expense_category_entry.grid(row=1, column=1, padx=5, pady=5)
+
+        ttk.Label(frame, text="Amount:").grid(row=2, column=0, padx=5, pady=5, sticky=tk.E)
+        self.expense_amount_entry = ttk.Entry(frame)
+        self.expense_amount_entry.grid(row=2, column=1, padx=5, pady=5)
+
+        ttk.Label(frame, text="Description:").grid(row=3, column=0, padx=5, pady=5, sticky=tk.E)
+        self.expense_desc_entry = ttk.Entry(frame)
+        self.expense_desc_entry.grid(row=3, column=1, padx=5, pady=5)
+
+        # Buttons for expense actions
+        add_btn = ttk.Button(frame, text="Add Expense", command=self.add_expense)
+        add_btn.grid(row=4, column=0, pady=10)
+
+        update_btn = ttk.Button(frame, text="Update Expense", command=self.update_expense)
+        update_btn.grid(row=4, column=1, pady=10)
+
+        reset_btn = ttk.Button(frame, text="Reset", command=self.reset_expense_fields)
+        reset_btn.grid(row=5, column=0, pady=10)
+
+        delete_btn = ttk.Button(frame, text="Delete Expense", command=self.delete_expense)
+        delete_btn.grid(row=5, column=1, pady=10)
+
+        # Right-side frame to display expense data
+        self.expense_data_frame = ttk.Frame(self.content_frame)
+        self.expense_data_frame.pack(side=RIGHT, fill=BOTH, expand=True, padx=10, pady=10)
+        self.display_expense_data()
 
     def add_income(self):
         # Retrieve income details from user input
@@ -355,32 +408,24 @@ class BudgetProApp:
         except ValueError as e:
             messagebox.showerror("Input Error", f"Invalid input: {e}")
 
-    def show_expense(self):
-        self.clear_content()
-        frame = ttk.Frame(self.content_frame)
-        frame.pack(pady=20)
-        
-        ttk.Label(frame, text="Add Expense", font=("Helvetica", 16, "bold")).grid(row=0, column=0, columnspan=2, pady=10)
-        
-        # Input fields for expense entry
-        ttk.Label(frame, text="Date (YYYY-MM-DD):").grid(row=1, column=0, padx=5, pady=5, sticky=tk.E)
-        self.expense_date_entry = ttk.Entry(frame)
-        self.expense_date_entry.grid(row=1, column=1, padx=5, pady=5)
-        
-        ttk.Label(frame, text="Category:").grid(row=2, column=0, padx=5, pady=5, sticky=tk.E)
-        self.expense_category_entry = ttk.Entry(frame)
-        self.expense_category_entry.grid(row=2, column=1, padx=5, pady=5)
-        
-        ttk.Label(frame, text="Amount:").grid(row=3, column=0, padx=5, pady=5, sticky=tk.E)
-        self.expense_amount_entry = ttk.Entry(frame)
-        self.expense_amount_entry.grid(row=3, column=1, padx=5, pady=5)
-        
-        ttk.Label(frame, text="Description:").grid(row=4, column=0, padx=5, pady=5, sticky=tk.E)
-        self.expense_desc_entry = ttk.Entry(frame)
-        self.expense_desc_entry.grid(row=4, column=1, padx=5, pady=5)
-        
-        add_btn = ttk.Button(frame, text="Add Expense", command=self.add_expense)
-        add_btn.grid(row=5, column=0, columnspan=2, pady=10)
+    def update_income(self):
+        # Logic to update income
+        pass
+
+    def reset_income_fields(self):
+        # Logic to reset income fields
+        self.income_date_entry.delete(0, tk.END)
+        self.income_category_entry.delete(0, tk.END)
+        self.income_amount_entry.delete(0, tk.END)
+        self.income_desc_entry.delete(0, tk.END)
+
+    def delete_income(self):
+        # Logic to delete income
+        pass
+
+    def display_income_data(self):
+        # Logic to display income data in the right-side frame
+        pass
 
     def add_expense(self):
         # Retrieve expense details from user input
@@ -408,6 +453,25 @@ class BudgetProApp:
             self.show_dashboard()  # Optionally redirect to dashboard
         except ValueError as e:
             messagebox.showerror("Input Error", f"Invalid input: {e}")
+
+    def update_expense(self):
+        # Logic to update expense
+        pass
+
+    def reset_expense_fields(self):
+        # Logic to reset expense fields
+        self.expense_date_entry.delete(0, tk.END)
+        self.expense_category_entry.delete(0, tk.END)
+        self.expense_amount_entry.delete(0, tk.END)
+        self.expense_desc_entry.delete(0, tk.END)
+
+    def delete_expense(self):
+        # Logic to delete expense
+        pass
+
+    def display_expense_data(self):
+        # Logic to display expense data in the right-side frame
+        pass
 
     def show_budget_planner(self):
         self.clear_content()
