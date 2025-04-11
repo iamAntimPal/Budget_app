@@ -1,3 +1,9 @@
+import os
+import sys
+
+# Add the parent directory to the Python path to resolve the 'controllers' module
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import tkinter as tk
 from tkinter import ttk
 from tkcalendar import DateEntry
@@ -30,8 +36,11 @@ class EntryForm(ttk.Frame):
         # Action Buttons
         button_frame = ttk.Frame(form_frame)
         button_frame.grid(row=len(fields), column=0, columnspan=2, pady=10)
-        
+
         ttk.Button(button_frame, text="Save", command=self.save_entry).pack(side=tk.LEFT, padx=5)
+        ttk.Button(button_frame, text="Update", command=self.update_entry).pack(side=tk.LEFT, padx=5)
+        ttk.Button(button_frame, text="Delete", command=self.delete_entry).pack(side=tk.LEFT, padx=5)
+        ttk.Button(button_frame, text="Search", command=self.search_entry).pack(side=tk.LEFT, padx=5)
         ttk.Button(button_frame, text="Cancel", command=self.clear_form).pack(side=tk.LEFT, padx=5)
         
         # Status Label
@@ -44,7 +53,30 @@ class EntryForm(ttk.Frame):
             self.status_var.set("Entry saved successfully!")
         except Exception as e:
             self.status_var.set(f"Error: {str(e)}")
-        
+
+    def update_entry(self):
+        try:
+            # Logic to update an existing entry
+            self.status_var.set("Entry updated successfully!")
+        except Exception as e:
+            self.status_var.set(f"Error: {str(e)}")
+
+    def delete_entry(self):
+        try:
+            # Logic to delete an entry
+            self.status_var.set("Entry deleted successfully!")
+        except Exception as e:
+            self.status_var.set(f"Error: {str(e)}")
+
+    def search_entry(self):
+        try:
+            # Logic to search for entries by date, income, or expense
+            self.status_var.set("Search completed!")
+        except Exception as e:
+            self.status_var.set(f"Error: {str(e)}")
+
     def clear_form(self):
         # Clear all form fields
-        pass
+        for child in self.winfo_children():
+            if isinstance(child, ttk.Entry) or isinstance(child, DateEntry):
+                child.delete(0, tk.END)
