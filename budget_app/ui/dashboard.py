@@ -47,13 +47,16 @@ class Dashboard(ttk.Frame):
         monthly_data = self.manager.get_monthly_summary()
         self.ax.clear()
         if monthly_data:
-            months = [f"{m[0]:02d}/{y}" for y, m in monthly_data]
-            income = [i for i, e, y, m in monthly_data]
-            expense = [e for i, e, y, m in monthly_data]
-            
-            self.ax.bar(months, income, label='Income')
-            self.ax.bar(months, [-e for e in expense], label='Expense')
-            self.ax.legend()
+            try:
+                months = [f"{m:02d}/{y}" for y, m, i, e in monthly_data]
+                income = [i for y, m, i, e in monthly_data]
+                expense = [e for y, m, i, e in monthly_data]
+
+                self.ax.bar(months, income, label='Income')
+                self.ax.bar(months, [-e for e in expense], label='Expense')
+                self.ax.legend()
+            except ValueError as e:
+                print(f"Error processing monthly data: {e}")
         self.canvas.draw()
         
         # Update category breakdown
