@@ -2,6 +2,12 @@ import tkinter as tk
 from tkinter import ttk
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import os
+import sys
+
+# Add the parent directory to the Python path to resolve the 'controllers' module
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from controllers.manager import BudgetManager
 
 class Dashboard(ttk.Frame):

@@ -1,3 +1,9 @@
+import os
+import sys
+
+# Add the parent directory to the Python path to resolve the 'models' module
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from models.entry import Entry
 from database.db_handler import Database
 
