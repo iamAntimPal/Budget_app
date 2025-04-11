@@ -1,35 +1,28 @@
 import tkinter as tk
-from tkinter import ttk
-from ui.dashboard import Dashboard
-from database.db_handler import DBHandler
-
-class BudgetApp(tk.Tk):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.title("Budget Manager")
-        self.geometry("800x600")
+from ui.navigation import Navigation
+from django.conf import settings
+import ttk.style as ttk
+from controllers.manager import BudgetManager
+class BudgetApp:
+    def __init__(self):
+        self.root = tk.Tk()
+        self.root.title("Budget Manager Pro")
+        self.root.geometry("1200x800")
+        self.root.minsize(800, 600)
         
-        # Create the shared database handler
-        self.db_handler = DBHandler()
-
-        # Setup container for different frames (dashboard, forms, etc.)
-        container = ttk.Frame(self)
-        container.pack(side="top", fill="both", expand=True)
-
-        # Dictionary for frames
-        self.frames = {}
-        for F in (Dashboard,):
-            frame = F(parent=container, controller=self)
-            self.frames[F] = frame
-            frame.grid(row=0, column=0, sticky="nsew")
+        # Apply custom styles
+        style = ttk.Style()
+        style.theme_use('clam')
+        style.configure('Treeview', rowheight=25)
+        style.configure('TLabel', font=('Arial', 12))
+        style.configure('TButton', font=('Arial', 12), padding=5)
         
-        self.show_frame(Dashboard)
+        self.navigation = Navigation(self.root)
+        self.navigation.pack(fill=tk.BOTH, expand=True)
 
-    def show_frame(self, frame_class):
-        '''Raise the frame to the top.'''
-        frame = self.frames[frame_class]
-        frame.tkraise()
+    def run(self):
+        self.root.mainloop()
 
 if __name__ == "__main__":
     app = BudgetApp()
-    app.mainloop()
+    app.run()

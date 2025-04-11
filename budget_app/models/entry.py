@@ -1,10 +1,15 @@
-class BudgetEntry:
-    def __init__(self, entry_type, category, amount, description, date):
-        self.entry_type = entry_type  # e.g., 'expense' or 'income'
-        self.category = category
-        self.amount = amount
-        self.description = description
-        self.date = date
+from dataclasses import dataclass
+from datetime import datetime
 
-    def to_tuple(self):
-        return (self.entry_type, self.category, self.amount, self.description, self.date)
+@dataclass
+class Entry:
+    id: int
+    type: str
+    amount: float
+    category: str
+    date: str
+    description: str = None
+
+    @property
+    def date_obj(self):
+        return datetime.strptime(self.date, '%Y-%m-%d').date()
