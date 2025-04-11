@@ -32,6 +32,17 @@ class BudgetProApp:
         self.create_action_bar()
         self.create_content_frame()  # Ensure content_frame is created before check_first_run
         
+        # Make the root window responsive
+        self.root.rowconfigure(0, weight=1)
+        self.root.columnconfigure(0, weight=1)
+
+        # Make the content frame responsive
+        self.content_frame.rowconfigure(0, weight=1)
+        self.content_frame.columnconfigure(0, weight=1)
+
+        # Bind the resize event to adjust UI dynamically
+        self.root.bind("<Configure>", self.on_resize)
+
         # Check first run
         self.check_first_run()
         
@@ -244,6 +255,21 @@ class BudgetProApp:
     def show_main_menu(self):
         # Implement main menu functionality
         pass
+
+    def on_resize(self, event):
+        # Dynamically adjust the size of UI components based on the window size
+        new_width = event.width
+        new_height = event.height
+
+        # Adjust font sizes dynamically based on window size
+        font_size = max(10, int(new_width / 100))  # Example scaling logic
+        self.style.configure("TLabel", font=("Helvetica", font_size))
+        self.style.configure("TButton", font=("Helvetica", font_size))
+        self.style.configure("TEntry", font=("Helvetica", font_size))
+
+        # Adjust padding for content frame dynamically
+        if hasattr(self, 'content_frame'):
+            self.content_frame.pack_configure(padx=int(new_width * 0.02), pady=int(new_height * 0.02))
 
 if __name__ == "__main__":
     root = ttk.Window()
