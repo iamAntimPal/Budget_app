@@ -8,7 +8,11 @@ class BudgetApp:
         self.root = tk.Tk()
         self.root.title("Budget Manager Pro")
         self.root.geometry("1200x800")
-        self.root.minsize(800, 600)
+        self.roo# The line `self.root.minsize(800, 600)` in the `BudgetApp` class is setting the
+        # minimum size that the root window can be resized to. In this case, it is setting the
+        # minimum width to 800 pixels and the minimum height to 600 pixels. This means that
+        # the user will not be able to resize the window to be smaller than these dimensions.
+        t.minsize(800, 600)
         
         # Apply custom styles
         style = ttk.Style()
