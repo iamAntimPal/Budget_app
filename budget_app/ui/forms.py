@@ -113,10 +113,35 @@ class EntryForm(ttk.Frame):
                 child.delete(0, tk.END)
 
     def search_entries(self):
-        query = self.search_var.get().strip()
-        # Logic to search entries based on the query
-        # Populate the results_tree with matching entries
-        pass
+        query = self.search_var.get().strip().lower()
+        for row in self.results_tree.get_children():
+            self.results_tree.delete(row)
+
+        if not query:
+            messagebox.showerror("Error", "Search query cannot be empty.")
+            return
+
+        # Fetch all entries and filter based on the query
+        all_entries = self.manager.get_all_entries()
+        # Ensure all fields are strings before performing the search
+        filtered_entries = [
+            entry for entry in all_entries
+            if query in str(entry.id).lower()
+            or query in entry.type.lower()
+            or query in str(entry.amount).lower()
+            or query in str(entry.category).lower()
+            or query in entry.date.lower()
+        ]
+
+        if not filtered_entries:
+            messagebox.showinfo("No Results", "No matching entries found.")
+            return
+
+        # Populate the results tree with filtered entries
+        for entry in filtered_entries:
+            self.results_tree.insert('', 'end', values=(
+                entry.id, entry.type, entry.amount, entry.category, entry.date, entry.description
+            ))
 
     def update_selected_entry(self):
         selected_item = self.results_tree.selection()
