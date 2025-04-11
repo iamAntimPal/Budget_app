@@ -36,8 +36,7 @@ class BudgetProApp:
         self.check_first_run()
         
         # Show login screen
-        self.show_login()
-
+        #self.show_login()
     def create_data_directory(self):
         if not os.path.exists(CSV_DIR):
             os.makedirs(CSV_DIR)
@@ -83,7 +82,11 @@ class BudgetProApp:
         sidebar = ttk.Frame(self.root, width=250)
         sidebar.pack(side=LEFT, fill=Y)
         
-        # Menu items
+        # Main Menu
+        main_menu_btn = ttk.Button(sidebar, text="Main Menu", command=self.show_main_menu)
+        main_menu_btn.pack(fill=X, padx=10, pady=5)
+
+        # Dashboard Menu
         menu_items = ["Dashboard", "Analysis", "Income", "Expense", "Budget Planner"]
         for item in menu_items:
             btn = ttk.Button(sidebar, text=item, command=lambda i=item: self.show_page(i))
@@ -108,6 +111,10 @@ class BudgetProApp:
         self.search_var = tk.StringVar()
         search_entry = ttk.Entry(action_bar, textvariable=self.search_var)
         search_entry.pack(side=LEFT, padx=5)
+
+        # Add search icon button
+        search_icon = ttk.Button(action_bar, text="🔍", command=self.perform_search)
+        search_icon.pack(side=LEFT, padx=5)
         
         # Month/Year selector
         months = [f"{i:02d}" for i in range(1,13)]
@@ -229,6 +236,14 @@ class BudgetProApp:
     def save_data(self):
         self.transactions.to_csv(TRANSACTIONS_FILE, index=False)
         self.budgets.to_csv(BUDGETS_FILE, index=False)
+
+    def perform_search(self):
+        # Implement search functionality
+        pass
+
+    def show_main_menu(self):
+        # Implement main menu functionality
+        pass
 
 if __name__ == "__main__":
     root = ttk.Window()
