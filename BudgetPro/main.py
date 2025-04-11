@@ -247,15 +247,15 @@ class BudgetProApp:
 
     def show_page(self, page):
         self.clear_content()
-        if page == "Dashboard":
+        if (page == "Dashboard"):
             self.show_dashboard()
-        elif page == "Analysis":
+        elif (page == "Analysis"):
             self.show_analysis()
-        elif page == "Income":
+        elif (page == "Income"):
             self.show_income()
-        elif page == "Expense":
+        elif (page == "Expense"):
             self.show_expense()
-        elif page == "Budget Planner":
+        elif (page == "Budget Planner"):
             self.show_budget_planner()
 
     def show_dashboard(self):
@@ -307,9 +307,31 @@ class BudgetProApp:
         frame.pack(side=LEFT, fill=BOTH, expand=True, padx=10, pady=10)
 
         # Input fields for income entry
-        ttk.Label(frame, text="Date (YYYY-MM-DD):").grid(row=0, column=0, padx=5, pady=5, sticky=tk.E)
+        ttk.Label(frame, text="Date:").grid(row=0, column=0, padx=5, pady=5, sticky=tk.E)
         self.income_date_entry = ttk.Entry(frame)
         self.income_date_entry.grid(row=0, column=1, padx=5, pady=5)
+
+        # Fix for calendar button to show a calendar popup
+        def select_income_date():
+            import calendar
+            from tkinter import Toplevel
+
+            def set_date():
+                selected_date = f"{cal.get_date()}"
+                self.income_date_entry.delete(0, tk.END)
+                self.income_date_entry.insert(0, selected_date)
+                date_window.destroy()
+
+            date_window = Toplevel(self.root)
+            date_window.title("Select Date")
+            cal = calendar.Calendar(date_window)
+            cal.pack(pady=20)
+            ttk.Button(date_window, text="Set Date", command=set_date).pack(pady=10)
+
+        ttk.Button(frame, text="📅", command=select_income_date).grid(row=0, column=2, padx=5, pady=5)
+
+        # Set default date to current date
+        self.income_date_entry.insert(0, "2025-04-11")
 
         ttk.Label(frame, text="Category:").grid(row=1, column=0, padx=5, pady=5, sticky=tk.E)
         self.income_category_entry = ttk.Entry(frame)
@@ -347,9 +369,29 @@ class BudgetProApp:
         frame.pack(side=LEFT, fill=BOTH, expand=True, padx=10, pady=10)
 
         # Input fields for expense entry
-        ttk.Label(frame, text="Date (YYYY-MM-DD):").grid(row=0, column=0, padx=5, pady=5, sticky=tk.E)
+        ttk.Label(frame, text="Date:").grid(row=0, column=0, padx=5, pady=5, sticky=tk.E)
         self.expense_date_entry = ttk.Entry(frame)
         self.expense_date_entry.grid(row=0, column=1, padx=5, pady=5)
+
+        # Add a calendar button to select a date
+        def select_expense_date():
+            from tkcalendar import Calendar, DateEntry
+            date_window = tk.Toplevel(self.root)
+            date_window.title("Select Date")
+            cal = DateEntry(date_window, selectmode='day', year=2025, month=4, day=11)
+            cal.pack(pady=20)
+
+            def set_date():
+                self.expense_date_entry.delete(0, tk.END)
+                self.expense_date_entry.insert(0, cal.get_date().strftime('%Y-%m-%d'))
+                date_window.destroy()
+
+            ttk.Button(date_window, text="Set Date", command=set_date).pack(pady=10)
+
+        ttk.Button(frame, text="📅", command=select_expense_date).grid(row=0, column=2, padx=5, pady=5)
+
+        # Set default date to current date
+        self.expense_date_entry.insert(0, "2025-04-11")
 
         ttk.Label(frame, text="Category:").grid(row=1, column=0, padx=5, pady=5, sticky=tk.E)
         self.expense_category_entry = ttk.Entry(frame)
@@ -381,18 +423,19 @@ class BudgetProApp:
         self.expense_data_frame.pack(side=RIGHT, fill=BOTH, expand=True, padx=10, pady=10)
         self.display_expense_data()
 
+    # Fix for pandas DataFrame append deprecation
     def add_income(self):
         # Retrieve income details from user input
         date_str = self.income_date_entry.get().strip()
         category = self.income_category_entry.get().strip()
         amount_str = self.income_amount_entry.get().strip()
         description = self.income_desc_entry.get().strip()
-        
+
         try:
             # Validate date and amount formats
             datetime.strptime(date_str, '%Y-%m-%d')
             amount = float(amount_str)
-            
+
             # Create new record and append to transactions
             new_record = {
                 "date": date_str,
@@ -401,7 +444,7 @@ class BudgetProApp:
                 "amount": amount,
                 "description": description
             }
-            self.transactions = self.transactions.append(new_record, ignore_index=True)
+            self.transactions = pd.concat([self.transactions, pd.DataFrame([new_record])], ignore_index=True)
             self.save_data()
             messagebox.showinfo("Success", "Income added successfully!")
             self.show_dashboard()  # Optionally redirect to dashboard
@@ -455,23 +498,82 @@ class BudgetProApp:
             messagebox.showerror("Input Error", f"Invalid input: {e}")
 
     def update_expense(self):
-        # Logic to update expense
-        pass
+        # Logic to update an existing expense
+        selected_date = self.expense_date_entry.get().strip()
+        selected_category = self.expense_category_entry.get().strip()
+        selected_amount = self.expense_amount_entry.get().strip()
+        selected_description = self.expense_desc_entry.get().strip()
 
-    def reset_expense_fields(self):
-        # Logic to reset expense fields
-        self.expense_date_entry.delete(0, tk.END)
-        self.expense_category_entry.delete(0, tk.END)
-        self.expense_amount_entry.delete(0, tk.END)
-        self.expense_desc_entry.delete(0, tk.END)
+        if not selected_date or not selected_category or not selected_amount:
+            messagebox.showerror("Error", "Date, Category, and Amount are required to update an expense!")
+            return
+
+        try:
+            # Validate date and amount
+            datetime.strptime(selected_date, '%Y-%m-%d')
+            selected_amount = float(selected_amount)
+
+            # Find and update the expense in the DataFrame
+            for index, row in self.transactions.iterrows():
+                if row['date'] == selected_date and row['category'] == selected_category and row['type'] == 'Expense':
+                    self.transactions.at[index, 'amount'] = selected_amount
+                    self.transactions.at[index, 'description'] = selected_description
+                    self.save_data()
+                    messagebox.showinfo("Success", "Expense updated successfully!")
+                    self.display_expense_data()
+                    return
+
+            messagebox.showerror("Error", "Expense not found!")
+        except ValueError as e:
+            messagebox.showerror("Input Error", f"Invalid input: {e}")
 
     def delete_expense(self):
-        # Logic to delete expense
-        pass
+        # Logic to delete an expense
+        selected_date = self.expense_date_entry.get().strip()
+        selected_category = self.expense_category_entry.get().strip()
+
+        if not selected_date or not selected_category:
+            messagebox.showerror("Error", "Date and Category are required to delete an expense!")
+            return
+
+        try:
+            # Validate date
+            datetime.strptime(selected_date, '%Y-%m-%d')
+
+            # Find and delete the expense in the DataFrame
+            self.transactions = self.transactions[~((self.transactions['date'] == selected_date) &
+                                                     (self.transactions['category'] == selected_category) &
+                                                     (self.transactions['type'] == 'Expense'))]
+            self.save_data()
+            messagebox.showinfo("Success", "Expense deleted successfully!")
+            self.display_expense_data()
+        except ValueError as e:
+            messagebox.showerror("Input Error", f"Invalid input: {e}")
 
     def display_expense_data(self):
         # Logic to display expense data in the right-side frame
-        pass
+        for widget in self.expense_data_frame.winfo_children():
+            widget.destroy()
+
+        if self.transactions.empty:
+            ttk.Label(self.expense_data_frame, text="No expense data available.").pack(pady=10)
+            return
+
+        # Filter only expense data
+        expense_data = self.transactions[self.transactions['type'] == 'Expense']
+
+        # Create a treeview to display the data
+        columns = ('date', 'category', 'amount', 'description')
+        tree = ttk.Treeview(self.expense_data_frame, columns=columns, show='headings')
+        tree.heading('date', text='Date')
+        tree.heading('category', text='Category')
+        tree.heading('amount', text='Amount')
+        tree.heading('description', text='Description')
+
+        for _, row in expense_data.iterrows():
+            tree.insert('', tk.END, values=(row['date'], row['category'], row['amount'], row['description']))
+
+        tree.pack(fill=BOTH, expand=True)
 
     def show_budget_planner(self):
         self.clear_content()
