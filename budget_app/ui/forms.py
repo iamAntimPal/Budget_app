@@ -8,6 +8,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkcalendar import DateEntry
 from controllers.manager import BudgetManager
+from tkinter import messagebox
 
 class EntryForm(ttk.Frame):
     def __init__(self, parent):
