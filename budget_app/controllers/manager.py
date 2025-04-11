@@ -1,3 +1,9 @@
+import os
+import sys
+
+# Add the parent directory to the Python path to resolve the 'models' module
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from models.entry import Entry
 from database.db_handler import Database
 
@@ -51,3 +57,15 @@ class BudgetManager:
             GROUP BY category
         ''')
         return dict(cursor.fetchall())
+
+    def get_entries(self, start_date=None, end_date=None):
+        cursor = self.db.conn.cursor()
+        query = "SELECT * FROM entries"
+        params = []
+
+        if start_date and end_date:
+            query += " WHERE date BETWEEN ? AND ?"
+            params.extend([start_date, end_date])
+
+        cursor.execute(query, params)
+        return cursor.fetchall()
