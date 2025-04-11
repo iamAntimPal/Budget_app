@@ -25,13 +25,15 @@ class BudgetProApp:
         # Initialize data
         self.create_data_directory()
         self.load_data()
-        self.check_first_run()
         
         # UI Setup
         self.create_header()
         self.create_sidebar()
         self.create_action_bar()
-        self.create_content_frame()
+        self.create_content_frame()  # Ensure content_frame is created before check_first_run
+        
+        # Check first run
+        self.check_first_run()
         
         # Show login screen
         self.show_login()
