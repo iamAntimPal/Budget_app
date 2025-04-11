@@ -455,23 +455,82 @@ class BudgetProApp:
             messagebox.showerror("Input Error", f"Invalid input: {e}")
 
     def update_expense(self):
-        # Logic to update expense
-        pass
+        # Logic to update an existing expense
+        selected_date = self.expense_date_entry.get().strip()
+        selected_category = self.expense_category_entry.get().strip()
+        selected_amount = self.expense_amount_entry.get().strip()
+        selected_description = self.expense_desc_entry.get().strip()
 
-    def reset_expense_fields(self):
-        # Logic to reset expense fields
-        self.expense_date_entry.delete(0, tk.END)
-        self.expense_category_entry.delete(0, tk.END)
-        self.expense_amount_entry.delete(0, tk.END)
-        self.expense_desc_entry.delete(0, tk.END)
+        if not selected_date or not selected_category or not selected_amount:
+            messagebox.showerror("Error", "Date, Category, and Amount are required to update an expense!")
+            return
+
+        try:
+            # Validate date and amount
+            datetime.strptime(selected_date, '%Y-%m-%d')
+            selected_amount = float(selected_amount)
+
+            # Find and update the expense in the DataFrame
+            for index, row in self.transactions.iterrows():
+                if row['date'] == selected_date and row['category'] == selected_category and row['type'] == 'Expense':
+                    self.transactions.at[index, 'amount'] = selected_amount
+                    self.transactions.at[index, 'description'] = selected_description
+                    self.save_data()
+                    messagebox.showinfo("Success", "Expense updated successfully!")
+                    self.display_expense_data()
+                    return
+
+            messagebox.showerror("Error", "Expense not found!")
+        except ValueError as e:
+            messagebox.showerror("Input Error", f"Invalid input: {e}")
 
     def delete_expense(self):
-        # Logic to delete expense
-        pass
+        # Logic to delete an expense
+        selected_date = self.expense_date_entry.get().strip()
+        selected_category = self.expense_category_entry.get().strip()
+
+        if not selected_date or not selected_category:
+            messagebox.showerror("Error", "Date and Category are required to delete an expense!")
+            return
+
+        try:
+            # Validate date
+            datetime.strptime(selected_date, '%Y-%m-%d')
+
+            # Find and delete the expense in the DataFrame
+            self.transactions = self.transactions[~((self.transactions['date'] == selected_date) &
+                                                     (self.transactions['category'] == selected_category) &
+                                                     (self.transactions['type'] == 'Expense'))]
+            self.save_data()
+            messagebox.showinfo("Success", "Expense deleted successfully!")
+            self.display_expense_data()
+        except ValueError as e:
+            messagebox.showerror("Input Error", f"Invalid input: {e}")
 
     def display_expense_data(self):
         # Logic to display expense data in the right-side frame
-        pass
+        for widget in self.expense_data_frame.winfo_children():
+            widget.destroy()
+
+        if self.transactions.empty:
+            ttk.Label(self.expense_data_frame, text="No expense data available.").pack(pady=10)
+            return
+
+        # Filter only expense data
+        expense_data = self.transactions[self.transactions['type'] == 'Expense']
+
+        # Create a treeview to display the data
+        columns = ('date', 'category', 'amount', 'description')
+        tree = ttk.Treeview(self.expense_data_frame, columns=columns, show='headings')
+        tree.heading('date', text='Date')
+        tree.heading('category', text='Category')
+        tree.heading('amount', text='Amount')
+        tree.heading('description', text='Description')
+
+        for _, row in expense_data.iterrows():
+            tree.insert('', tk.END, values=(row['date'], row['category'], row['amount'], row['description']))
+
+        tree.pack(fill=BOTH, expand=True)
 
     def show_budget_planner(self):
         self.clear_content()
