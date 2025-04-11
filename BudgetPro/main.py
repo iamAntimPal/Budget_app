@@ -247,15 +247,15 @@ class BudgetProApp:
 
     def show_page(self, page):
         self.clear_content()
-        if page == "Dashboard":
+        if (page == "Dashboard"):
             self.show_dashboard()
-        elif page == "Analysis":
+        elif (page == "Analysis"):
             self.show_analysis()
-        elif page == "Income":
+        elif (page == "Income"):
             self.show_income()
-        elif page == "Expense":
+        elif (page == "Expense"):
             self.show_expense()
-        elif page == "Budget Planner":
+        elif (page == "Budget Planner"):
             self.show_budget_planner()
 
     def show_dashboard(self):
@@ -311,18 +311,21 @@ class BudgetProApp:
         self.income_date_entry = ttk.Entry(frame)
         self.income_date_entry.grid(row=0, column=1, padx=5, pady=5)
 
+        # Fix for calendar button to show a calendar popup
         def select_income_date():
-            from tkcalendar import Calendar, DateEntry
-            date_window = tk.Toplevel(self.root)
-            date_window.title("Select Date")
-            cal = DateEntry(date_window, selectmode='day', year=2025, month=4, day=11)
-            cal.pack(pady=20)
+            import calendar
+            from tkinter import Toplevel
 
             def set_date():
+                selected_date = f"{cal.get_date()}"
                 self.income_date_entry.delete(0, tk.END)
-                self.income_date_entry.insert(0, cal.get_date().strftime('%Y-%m-%d'))
+                self.income_date_entry.insert(0, selected_date)
                 date_window.destroy()
 
+            date_window = Toplevel(self.root)
+            date_window.title("Select Date")
+            cal = calendar.Calendar(date_window)
+            cal.pack(pady=20)
             ttk.Button(date_window, text="Set Date", command=set_date).pack(pady=10)
 
         ttk.Button(frame, text="📅", command=select_income_date).grid(row=0, column=2, padx=5, pady=5)
@@ -420,18 +423,19 @@ class BudgetProApp:
         self.expense_data_frame.pack(side=RIGHT, fill=BOTH, expand=True, padx=10, pady=10)
         self.display_expense_data()
 
+    # Fix for pandas DataFrame append deprecation
     def add_income(self):
         # Retrieve income details from user input
         date_str = self.income_date_entry.get().strip()
         category = self.income_category_entry.get().strip()
         amount_str = self.income_amount_entry.get().strip()
         description = self.income_desc_entry.get().strip()
-        
+
         try:
             # Validate date and amount formats
             datetime.strptime(date_str, '%Y-%m-%d')
             amount = float(amount_str)
-            
+
             # Create new record and append to transactions
             new_record = {
                 "date": date_str,
@@ -440,7 +444,7 @@ class BudgetProApp:
                 "amount": amount,
                 "description": description
             }
-            self.transactions = self.transactions.append(new_record, ignore_index=True)
+            self.transactions = pd.concat([self.transactions, pd.DataFrame([new_record])], ignore_index=True)
             self.save_data()
             messagebox.showinfo("Success", "Income added successfully!")
             self.show_dashboard()  # Optionally redirect to dashboard
