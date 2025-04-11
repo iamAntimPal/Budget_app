@@ -307,9 +307,28 @@ class BudgetProApp:
         frame.pack(side=LEFT, fill=BOTH, expand=True, padx=10, pady=10)
 
         # Input fields for income entry
-        ttk.Label(frame, text="Date (YYYY-MM-DD):").grid(row=0, column=0, padx=5, pady=5, sticky=tk.E)
+        ttk.Label(frame, text="Date:").grid(row=0, column=0, padx=5, pady=5, sticky=tk.E)
         self.income_date_entry = ttk.Entry(frame)
         self.income_date_entry.grid(row=0, column=1, padx=5, pady=5)
+
+        def select_income_date():
+            from tkcalendar import Calendar, DateEntry
+            date_window = tk.Toplevel(self.root)
+            date_window.title("Select Date")
+            cal = DateEntry(date_window, selectmode='day', year=2025, month=4, day=11)
+            cal.pack(pady=20)
+
+            def set_date():
+                self.income_date_entry.delete(0, tk.END)
+                self.income_date_entry.insert(0, cal.get_date().strftime('%Y-%m-%d'))
+                date_window.destroy()
+
+            ttk.Button(date_window, text="Set Date", command=set_date).pack(pady=10)
+
+        ttk.Button(frame, text="📅", command=select_income_date).grid(row=0, column=2, padx=5, pady=5)
+
+        # Set default date to current date
+        self.income_date_entry.insert(0, "2025-04-11")
 
         ttk.Label(frame, text="Category:").grid(row=1, column=0, padx=5, pady=5, sticky=tk.E)
         self.income_category_entry = ttk.Entry(frame)
@@ -347,9 +366,29 @@ class BudgetProApp:
         frame.pack(side=LEFT, fill=BOTH, expand=True, padx=10, pady=10)
 
         # Input fields for expense entry
-        ttk.Label(frame, text="Date (YYYY-MM-DD):").grid(row=0, column=0, padx=5, pady=5, sticky=tk.E)
+        ttk.Label(frame, text="Date:").grid(row=0, column=0, padx=5, pady=5, sticky=tk.E)
         self.expense_date_entry = ttk.Entry(frame)
         self.expense_date_entry.grid(row=0, column=1, padx=5, pady=5)
+
+        # Add a calendar button to select a date
+        def select_expense_date():
+            from tkcalendar import Calendar, DateEntry
+            date_window = tk.Toplevel(self.root)
+            date_window.title("Select Date")
+            cal = DateEntry(date_window, selectmode='day', year=2025, month=4, day=11)
+            cal.pack(pady=20)
+
+            def set_date():
+                self.expense_date_entry.delete(0, tk.END)
+                self.expense_date_entry.insert(0, cal.get_date().strftime('%Y-%m-%d'))
+                date_window.destroy()
+
+            ttk.Button(date_window, text="Set Date", command=set_date).pack(pady=10)
+
+        ttk.Button(frame, text="📅", command=select_expense_date).grid(row=0, column=2, padx=5, pady=5)
+
+        # Set default date to current date
+        self.expense_date_entry.insert(0, "2025-04-11")
 
         ttk.Label(frame, text="Category:").grid(row=1, column=0, padx=5, pady=5, sticky=tk.E)
         self.expense_category_entry = ttk.Entry(frame)
