@@ -54,7 +54,7 @@ class Dashboard(ttk.Frame):
         self.ax.clear()
         if monthly_data:
             try:
-                months = [f"{m:02d}/{y}" for y, m, i, e in monthly_data]
+                months = [f"{int(m):02d}/{y}" for y, m, i, e in monthly_data]
                 income = [i for y, m, i, e in monthly_data]
                 expense = [e for y, m, i, e in monthly_data]
 

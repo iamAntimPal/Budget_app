@@ -47,6 +47,36 @@ class EntryForm(ttk.Frame):
         self.status_var = tk.StringVar()
         ttk.Label(self, textvariable=self.status_var).pack(padx=10, pady=5)
 
+        # Search Box
+        search_frame = ttk.LabelFrame(self, text="Search Income/Expense")
+        search_frame.pack(padx=10, pady=10, fill='x')
+
+        ttk.Label(search_frame, text="Search:").pack(side=tk.LEFT, padx=5, pady=5)
+        self.search_var = tk.StringVar()
+        search_entry = ttk.Entry(search_frame, textvariable=self.search_var)
+        search_entry.pack(side=tk.LEFT, padx=5, pady=5)
+
+        search_btn = ttk.Button(search_frame, text="Search", command=self.search_entries)
+        search_btn.pack(side=tk.LEFT, padx=5, pady=5)
+
+        # Results Treeview
+        self.results_tree = ttk.Treeview(self, columns=("id", "type", "amount", "category", "date", "description"), show="headings")
+        self.results_tree.heading("id", text="ID")
+        self.results_tree.heading("type", text="Type")
+        self.results_tree.heading("amount", text="Amount")
+        self.results_tree.heading("category", text="Category")
+        self.results_tree.heading("date", text="Date")
+        self.results_tree.heading("description", text="Description")
+        self.results_tree.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        # Action Buttons
+        action_frame = ttk.Frame(self)
+        action_frame.pack(padx=10, pady=10, fill='x')
+
+        ttk.Button(action_frame, text="Update", command=self.update_selected_entry).pack(side=tk.LEFT, padx=5)
+        ttk.Button(action_frame, text="Delete", command=self.delete_selected_entry).pack(side=tk.LEFT, padx=5)
+        ttk.Button(action_frame, text="Generate Report", command=self.generate_report).pack(side=tk.LEFT, padx=5)
+
     def save_entry(self):
         try:
             # Validation and submission logic
@@ -80,3 +110,29 @@ class EntryForm(ttk.Frame):
         for child in self.winfo_children():
             if isinstance(child, ttk.Entry) or isinstance(child, DateEntry):
                 child.delete(0, tk.END)
+
+    def search_entries(self):
+        query = self.search_var.get().strip()
+        # Logic to search entries based on the query
+        # Populate the results_tree with matching entries
+        pass
+
+    def update_selected_entry(self):
+        selected_item = self.results_tree.selection()
+        if not selected_item:
+            messagebox.showerror("Error", "No entry selected for update.")
+            return
+        # Logic to update the selected entry
+        pass
+
+    def delete_selected_entry(self):
+        selected_item = self.results_tree.selection()
+        if not selected_item:
+            messagebox.showerror("Error", "No entry selected for deletion.")
+            return
+        # Logic to delete the selected entry
+        pass
+
+    def generate_report(self):
+        # Logic to generate a report based on the displayed entries
+        pass

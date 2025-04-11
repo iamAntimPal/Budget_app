@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
+from .category import CATEGORIES
 
 @dataclass
 class Entry:
@@ -13,3 +14,7 @@ class Entry:
     @property
     def date_obj(self):
         return datetime.strptime(self.date, '%Y-%m-%d').date()
+
+    @staticmethod
+    def get_categories():
+        return [category.name for category in CATEGORIES]
