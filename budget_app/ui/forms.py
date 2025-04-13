@@ -22,7 +22,7 @@ class EntryForm(ttk.Frame):
         form_frame.pack(padx=10, pady=10, fill='x')
         
         # Form Fields
-        fields = [
+        self.fields = [
             ("Type:", ttk.Combobox(form_frame, values=['income', 'expense'])),
             ("Amount:", ttk.Entry(form_frame)),
             ("Category:", ttk.Combobox(form_frame, values=['Food', 'Rent', 'Salary', 'Entertainment'])),
@@ -30,18 +30,18 @@ class EntryForm(ttk.Frame):
             ("Description:", ttk.Entry(form_frame))
         ]
         
-        for i, (label, widget) in enumerate(fields):
+        for i, (label, widget) in enumerate(self.fields):
             ttk.Label(form_frame, text=label).grid(row=i, column=0, padx=5, pady=5)
             widget.grid(row=i, column=1, padx=5, pady=5)
         
         # Action Buttons
         button_frame = ttk.Frame(form_frame)
-        button_frame.grid(row=len(fields), column=0, columnspan=2, pady=10)
+        button_frame.grid(row=len(self.fields), column=0, columnspan=2, pady=10)
 
         ttk.Button(button_frame, text="Save", command=self.save_entry).pack(side=tk.LEFT, padx=5)
         ttk.Button(button_frame, text="Update", command=self.update_entry).pack(side=tk.LEFT, padx=5)
         ttk.Button(button_frame, text="Delete", command=self.delete_entry).pack(side=tk.LEFT, padx=5)
-        ttk.Button(button_frame, text="Search", command=self.search_entry).pack(side=tk.LEFT, padx=5)
+        ttk.Button(button_frame, text="Search", command=self.search_entries).pack(side=tk.LEFT, padx=5)
         ttk.Button(button_frame, text="Cancel", command=self.clear_form).pack(side=tk.LEFT, padx=5)
         
         # Status Label
@@ -78,39 +78,67 @@ class EntryForm(ttk.Frame):
         ttk.Button(action_frame, text="Delete", command=self.delete_selected_entry).pack(side=tk.LEFT, padx=5)
         ttk.Button(action_frame, text="Generate Report", command=self.generate_report).pack(side=tk.LEFT, padx=5)
 
+        # Bottom Frame to Display Entry Data
+        bottom_frame = ttk.LabelFrame(self, text="Entry Data")
+        bottom_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        self.entry_data_tree = ttk.Treeview(bottom_frame, columns=("id", "type", "amount", "category", "date", "description"), show="headings")
+        self.entry_data_tree.heading("id", text="ID")
+        self.entry_data_tree.heading("type", text="Type")
+        self.entry_data_tree.heading("amount", text="Amount")
+        self.entry_data_tree.heading("category", text="Category")
+        self.entry_data_tree.heading("date", text="Date")
+        self.entry_data_tree.heading("description", text="Description")
+        self.entry_data_tree.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        # Populate the tree with all entries
+        self.update_entry_data_tree()
+
     def save_entry(self):
         try:
-            # Validation and submission logic
+            entry_type = self.fields[0][1].get()
+            amount = float(self.fields[1][1].get())
+            category = self.fields[2][1].get()
+            date = self.fields[3][1].get()
+            description = self.fields[4][1].get()
+
+            self.manager.add_entry(entry_type, amount, category, date, description)
             self.status_var.set("Entry saved successfully!")
+            self.update_results_tree()
         except Exception as e:
             self.status_var.set(f"Error: {str(e)}")
 
     def update_entry(self):
         try:
-            # Logic to update an existing entry
+            selected_item = self.results_tree.selection()
+            if not selected_item:
+                raise ValueError("No entry selected for update.")
+
+            entry_id = self.results_tree.item(selected_item, 'values')[0]
+            entry_type = self.fields[0][1].get()
+            amount = float(self.fields[1][1].get())
+            category = self.fields[2][1].get()
+            date = self.fields[3][1].get()
+            description = self.fields[4][1].get()
+
+            self.manager.update_entry(entry_id, type=entry_type, amount=amount, category=category, date=date, description=description)
             self.status_var.set("Entry updated successfully!")
+            self.update_results_tree()
         except Exception as e:
             self.status_var.set(f"Error: {str(e)}")
 
     def delete_entry(self):
         try:
-            # Logic to delete an entry
+            selected_item = self.results_tree.selection()
+            if not selected_item:
+                raise ValueError("No entry selected for deletion.")
+
+            entry_id = self.results_tree.item(selected_item, 'values')[0]
+            self.manager.delete_entry_by_id(entry_id)
             self.status_var.set("Entry deleted successfully!")
+            self.update_results_tree()
         except Exception as e:
             self.status_var.set(f"Error: {str(e)}")
-
-    def search_entry(self):
-        try:
-            # Logic to search for entries by date, income, or expense
-            self.status_var.set("Search completed!")
-        except Exception as e:
-            self.status_var.set(f"Error: {str(e)}")
-
-    def clear_form(self):
-        # Clear all form fields
-        for child in self.winfo_children():
-            if isinstance(child, ttk.Entry) or isinstance(child, DateEntry):
-                child.delete(0, tk.END)
 
     def search_entries(self):
         query = self.search_var.get().strip().lower()
@@ -121,9 +149,7 @@ class EntryForm(ttk.Frame):
             messagebox.showerror("Error", "Search query cannot be empty.")
             return
 
-        # Fetch all entries and filter based on the query
         all_entries = self.manager.get_all_entries()
-        # Ensure all fields are strings before performing the search
         filtered_entries = [
             entry for entry in all_entries
             if query in str(entry.id).lower()
@@ -137,11 +163,38 @@ class EntryForm(ttk.Frame):
             messagebox.showinfo("No Results", "No matching entries found.")
             return
 
-        # Populate the results tree with filtered entries
         for entry in filtered_entries:
             self.results_tree.insert('', 'end', values=(
                 entry.id, entry.type, entry.amount, entry.category, entry.date, entry.description
             ))
+
+    def update_results_tree(self):
+        for row in self.results_tree.get_children():
+            self.results_tree.delete(row)
+
+        all_entries = self.manager.get_all_entries()
+        for entry in all_entries:
+            self.results_tree.insert('', 'end', values=(
+                entry.id, entry.type, entry.amount, entry.category, entry.date, entry.description
+            ))
+
+    def update_entry_data_tree(self):
+        # Clear existing data
+        for row in self.entry_data_tree.get_children():
+            self.entry_data_tree.delete(row)
+
+        # Fetch all entries and populate the tree
+        all_entries = self.manager.get_all_entries()
+        for entry in all_entries:
+            self.entry_data_tree.insert('', 'end', values=(
+                entry.id, entry.type, entry.amount, entry.category, entry.date, entry.description
+            ))
+
+    def clear_form(self):
+        # Clear all form fields
+        for child in self.winfo_children():
+            if isinstance(child, ttk.Entry) or isinstance(child, DateEntry):
+                child.delete(0, tk.END)
 
     def update_selected_entry(self):
         selected_item = self.results_tree.selection()
@@ -160,5 +213,27 @@ class EntryForm(ttk.Frame):
         pass
 
     def generate_report(self):
-        # Logic to generate a report based on the displayed entries
-        pass
+        try:
+            # Fetch all entries from the results tree
+            entries = []
+            for row in self.results_tree.get_children():
+                entries.append(self.results_tree.item(row, 'values'))
+
+            if not entries:
+                messagebox.showinfo("No Data", "No entries available to generate a report.")
+                return
+
+            # Create a report file
+            report_file = "report.txt"
+            with open(report_file, "w") as file:
+                file.write("Budget Report\n")
+                file.write("=" * 50 + "\n")
+                file.write(f"{'ID':<5}{'Type':<10}{'Amount':<10}{'Category':<15}{'Date':<15}{'Description':<20}\n")
+                file.write("-" * 50 + "\n")
+
+                for entry in entries:
+                    file.write(f"{entry[0]:<5}{entry[1]:<10}{entry[2]:<10}{entry[3]:<15}{entry[4]:<15}{entry[5]:<20}\n")
+
+            messagebox.showinfo("Success", f"Report generated successfully and saved as {report_file}.")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to generate report: {str(e)}")
