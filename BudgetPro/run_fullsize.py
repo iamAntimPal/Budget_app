@@ -1,5 +1,6 @@
 import tkinter as tk
 from ttkbootstrap import Window
+from main import BudgetProApp
 
 if __name__ == "__main__":
     root = Window(themename="cosmo")
