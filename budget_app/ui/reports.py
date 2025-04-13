@@ -52,9 +52,15 @@ class Reports(ttk.Frame):
         self.figure.clear()
         ax = self.figure.add_subplot(111)
         categories = {}
+        total_income = 0
+        total_expense = 0
         for entry in entries:
             category = entry[3]  # Assuming category is the 4th element in the tuple
             amount = entry[2]    # Assuming amount is the 3rd element in the tuple
+            if entry[1] == 'income':
+                total_income += amount
+            else:
+                total_expense += amount
             categories[category] = categories.get(category, 0) + amount
         ax.pie(categories.values(), labels=categories.keys(), autopct='%1.1f%%')
         self.canvas.draw()
@@ -68,3 +74,31 @@ class Reports(ttk.Frame):
             amount = entry[2]    # Assuming amount is the 3rd element in the tuple
             category = entry[3]  # Assuming category is the 4th element in the tuple
             self.tree.insert('', 'end', values=(date, entry_type, f"₹{amount:,.2f}", category))
+
+        # Display income and expense summary
+        summary_frame = ttk.Frame(self)
+        summary_frame.pack(pady=10)
+        ttk.Label(summary_frame, text=f"Total Income: ₹{total_income:,.2f}", foreground="green").pack(side=tk.LEFT, padx=10)
+        ttk.Label(summary_frame, text=f"Total Expense: ₹{total_expense:,.2f}", foreground="red").pack(side=tk.LEFT, padx=10)
+
+        # Generate Excel and CSV files
+        self.generate_files(entries)
+
+    def generate_files(self, entries):
+        import csv
+        import pandas as pd
+
+        # Generate CSV file
+        csv_file = "report.csv"
+        with open(csv_file, "w", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerow(["Date", "Type", "Amount", "Category"])
+            for entry in entries:
+                writer.writerow([entry[4], entry[1], entry[2], entry[3]])
+
+        # Generate Excel file
+        excel_file = "report.xlsx"
+        df = pd.DataFrame(entries, columns=["ID", "Type", "Amount", "Category", "Date", "Description"])
+        df.to_excel(excel_file, index=False)
+
+        messagebox.showinfo("Success", f"Reports generated successfully:\n{csv_file}\n{excel_file}")
