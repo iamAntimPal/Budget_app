@@ -575,11 +575,13 @@ class BudgetProApp:
 
         tree.pack(fill=BOTH, expand=True)
 
-    def show_budget_planner(self):
-        self.clear_content()
-        frame = ttk.Frame(self.content_frame)
-        frame.pack(pady=20)
-        ttk.Label(frame, text="Budget Planner Page - Coming Soon", font=("Helvetica", 16)).pack(pady=20)
+    def reset_expense_fields(self):
+        # Logic to reset expense fields
+        self.expense_date_entry.delete(0, tk.END)
+        self.expense_category_entry.delete(0, tk.END)
+        self.expense_amount_entry.delete(0, tk.END)
+        self.expense_desc_entry.delete(0, tk.END)
+
 
     def confirm_logout(self):
         if messagebox.askyesno("Logout", "Are you sure you want to logout?"):
