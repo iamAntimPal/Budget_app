@@ -47,18 +47,24 @@ class Reports(ttk.Frame):
         start = self.start_date.get()
         end = self.end_date.get()
         entries = self.manager.get_entries(start, end)
-        
+
         # Update chart
         self.figure.clear()
         ax = self.figure.add_subplot(111)
         categories = {}
         for entry in entries:
-            categories[entry.category] = categories.get(entry.category, 0) + entry.amount
+            category = entry[3]  # Assuming category is the 4th element in the tuple
+            amount = entry[2]    # Assuming amount is the 3rd element in the tuple
+            categories[category] = categories.get(category, 0) + amount
         ax.pie(categories.values(), labels=categories.keys(), autopct='%1.1f%%')
         self.canvas.draw()
-        
+
         # Update table
         for row in self.tree.get_children():
             self.tree.delete(row)
         for entry in entries:
-            self.tree.insert('', 'end', values=(entry.date, entry.type, f"₹{entry.amount:,.2f}", entry.category))
+            date = entry[4]      # Assuming date is the 5th element in the tuple
+            entry_type = entry[1]  # Assuming type is the 2nd element in the tuple
+            amount = entry[2]    # Assuming amount is the 3rd element in the tuple
+            category = entry[3]  # Assuming category is the 4th element in the tuple
+            self.tree.insert('', 'end', values=(date, entry_type, f"₹{amount:,.2f}", category))
