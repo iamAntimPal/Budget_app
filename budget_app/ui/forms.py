@@ -78,6 +78,22 @@ class EntryForm(ttk.Frame):
         ttk.Button(action_frame, text="Delete", command=self.delete_selected_entry).pack(side=tk.LEFT, padx=5)
         ttk.Button(action_frame, text="Generate Report", command=self.generate_report).pack(side=tk.LEFT, padx=5)
 
+        # Bottom Frame to Display Entry Data
+        bottom_frame = ttk.LabelFrame(self, text="Entry Data")
+        bottom_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        self.entry_data_tree = ttk.Treeview(bottom_frame, columns=("id", "type", "amount", "category", "date", "description"), show="headings")
+        self.entry_data_tree.heading("id", text="ID")
+        self.entry_data_tree.heading("type", text="Type")
+        self.entry_data_tree.heading("amount", text="Amount")
+        self.entry_data_tree.heading("category", text="Category")
+        self.entry_data_tree.heading("date", text="Date")
+        self.entry_data_tree.heading("description", text="Description")
+        self.entry_data_tree.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        # Populate the tree with all entries
+        self.update_entry_data_tree()
+
     def save_entry(self):
         try:
             entry_type = self.fields[0][1].get()
@@ -159,6 +175,18 @@ class EntryForm(ttk.Frame):
         all_entries = self.manager.get_all_entries()
         for entry in all_entries:
             self.results_tree.insert('', 'end', values=(
+                entry.id, entry.type, entry.amount, entry.category, entry.date, entry.description
+            ))
+
+    def update_entry_data_tree(self):
+        # Clear existing data
+        for row in self.entry_data_tree.get_children():
+            self.entry_data_tree.delete(row)
+
+        # Fetch all entries and populate the tree
+        all_entries = self.manager.get_all_entries()
+        for entry in all_entries:
+            self.entry_data_tree.insert('', 'end', values=(
                 entry.id, entry.type, entry.amount, entry.category, entry.date, entry.description
             ))
 
