@@ -21,6 +21,10 @@ class BudgetApp:
         self.navigation = Navigation(self.root)
         self.navigation.pack(fill=tk.BOTH, expand=True)
 
+        # Populate random data for testing
+        manager = BudgetManager()
+        manager.populate_random_data()
+
     def run(self):
         self.root.mainloop()
 
