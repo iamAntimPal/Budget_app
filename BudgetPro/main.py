@@ -699,4 +699,5 @@ class BudgetProApp:
 if __name__ == "__main__":
     root = ttk.Window()
     app = BudgetProApp(root)
+    root.geometry("1600x800")  # Set the window size to 1600x800
     root.mainloop()
