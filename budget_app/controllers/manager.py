@@ -69,3 +69,21 @@ class BudgetManager:
 
         cursor.execute(query, params)
         return cursor.fetchall()
+
+    def populate_random_data(self):
+        import random
+        from datetime import datetime, timedelta
+
+        categories = ['Food', 'Rent', 'Salary', 'Entertainment', 'Utilities']
+        types = ['income', 'expense']
+
+        for _ in range(50):
+            entry_type = random.choice(types)
+            amount = round(random.uniform(10, 1000), 2)
+            category = random.choice(categories)
+            date = (datetime.now() - timedelta(days=random.randint(0, 365))).strftime('%Y-%m-%d')
+            description = f"Random {entry_type} entry"
+
+            self.add_entry(entry_type, amount, category, date, description)
+
+        print("Random data populated successfully.")
