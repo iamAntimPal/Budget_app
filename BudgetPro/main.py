@@ -631,17 +631,55 @@ class BudgetProApp:
             widget.destroy()
 
     def save_data(self):
-        self.transactions.to_csv(TRANSACTIONS_FILE, index=False)
-        self.budgets.to_csv(BUDGETS_FILE, index=False)
+        # Save transactions and budgets data to their respective CSV files
+        try:
+            self.transactions.to_csv(TRANSACTIONS_FILE, index=False)
+            self.budgets.to_csv(BUDGETS_FILE, index=False)
+            messagebox.showinfo("Success", "Data saved successfully!")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to save data: {e}")
 
     def perform_search(self):
-        # Placeholder for search functionality
-        query = self.search_var.get().strip()
-        messagebox.showinfo("Search", f"Search functionality is not implemented yet.\nQuery: {query}")
+        # Search functionality to filter transactions based on a query
+        query = self.search_var.get().strip().lower()
+        if not query:
+            messagebox.showerror("Error", "Search query cannot be empty!")
+            return
+
+        # Filter transactions containing the query in any column
+        filtered_data = self.transactions[self.transactions.apply(lambda row: query in row.astype(str).str.lower().values, axis=1)]
+
+        if filtered_data.empty:
+            messagebox.showinfo("Search", "No matching records found.")
+        else:
+            # Display the filtered data in a new window
+            search_window = tk.Toplevel(self.root)
+            search_window.title("Search Results")
+
+            columns = list(filtered_data.columns)
+            tree = ttk.Treeview(search_window, columns=columns, show='headings')
+
+            for col in columns:
+                tree.heading(col, text=col)
+                tree.column(col, width=100)
+
+            for _, row in filtered_data.iterrows():
+                tree.insert('', tk.END, values=row.tolist())
+
+            tree.pack(fill=tk.BOTH, expand=True)
 
     def show_main_menu(self):
-        # Placeholder for main menu functionality
-        messagebox.showinfo("Menu", "Main menu functionality is not implemented yet.")
+        # Display the main menu with navigation options
+        self.clear_content()
+        frame = ttk.Frame(self.content_frame)
+        frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+
+        ttk.Label(frame, text="Main Menu", font=("Helvetica", 16)).pack(pady=10)
+
+        menu_items = ["Dashboard", "Analysis", "Income", "Expense", "Budget Planner"]
+        for item in menu_items:
+            btn = ttk.Button(frame, text=item, command=lambda i=item: self.show_page(i))
+            btn.pack(fill=tk.X, padx=10, pady=5)
 
     def on_resize(self, event):
         # Dynamically adjust font sizes and padding based on window dimensions
