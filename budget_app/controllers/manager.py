@@ -87,3 +87,15 @@ class BudgetManager:
             self.add_entry(entry_type, amount, category, date, description)
 
         print("Random data populated successfully.")
+
+    def add_entry_data(self, entry_type, amount, category, date, description):
+        """Add a new entry to the database."""
+        self.add_entry(entry_type, amount, category, date, description)
+
+    def update_entry_data(self, entry_id, entry_type=None, amount=None, category=None, date=None, description=None):
+        """Update an existing entry in the database."""
+        self.update_entry(entry_id, type=entry_type, amount=amount, category=category, date=date, description=description)
+
+    def delete_entry_data(self, entry_id):
+        """Delete an entry from the database by its ID."""
+        self.delete_entry_by_id(entry_id)
