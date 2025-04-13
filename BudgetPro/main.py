@@ -575,6 +575,13 @@ class BudgetProApp:
 
         tree.pack(fill=BOTH, expand=True)
 
+    def reset_expense_fields(self):
+        # Logic to reset expense fields
+        self.expense_date_entry.delete(0, tk.END)
+        self.expense_category_entry.delete(0, tk.END)
+        self.expense_amount_entry.delete(0, tk.END)
+        self.expense_desc_entry.delete(0, tk.END)
+
     def show_budget_planner(self):
         self.clear_content()
         frame = ttk.Frame(self.content_frame)
@@ -589,8 +596,34 @@ class BudgetProApp:
         self.style.theme_use(self.theme_var.get())
 
     def delete_entry(self):
-        # Placeholder for delete functionality
-        messagebox.showinfo("Delete", "Delete functionality is not implemented yet.")
+        # Retrieve selected entry details from the UI
+        selected_date = self.expense_date_entry.get().strip()
+        selected_category = self.expense_category_entry.get().strip()
+        selected_amount = self.expense_amount_entry.get().strip()
+
+        if not selected_date or not selected_category or not selected_amount:
+            messagebox.showerror("Error", "Date, Category, and Amount are required to delete an entry!")
+            return
+
+        try:
+            # Validate date and amount
+            datetime.strptime(selected_date, '%Y-%m-%d')
+            selected_amount = float(selected_amount)
+
+            # Find and delete the entry in the DataFrame
+            initial_count = len(self.transactions)
+            self.transactions = self.transactions[~((self.transactions['date'] == selected_date) &
+                                                     (self.transactions['category'] == selected_category) &
+                                                     (self.transactions['amount'] == selected_amount))]
+
+            if len(self.transactions) < initial_count:
+                self.save_data()
+                messagebox.showinfo("Success", "Entry deleted successfully!")
+                self.display_expense_data()  # Refresh the displayed data
+            else:
+                messagebox.showerror("Error", "Entry not found!")
+        except ValueError as e:
+            messagebox.showerror("Input Error", f"Invalid input: {e}")
 
     def clear_content(self):
         # Properly destroy all widgets in the content frame
